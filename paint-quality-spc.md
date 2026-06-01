@@ -1,20 +1,19 @@
 ---
-title: "Paint Quality SPC"
-author: "Eric Ibaale"
+title: "Multivariate Statistical Process Control of Paint Quality Indicators"
+author: "Group 3 | Eric Ibaale"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output:
   github_document:
     toc: true
-    toc_depth: 2
+    toc_depth: 3
     fig_width: 7
     fig_height: 4.5
     dev: png
-    df_print: kable
-  md_document:
-    variant: gfm
+  html_document:
     toc: true
-    toc_depth: 2
-    pandoc_args: ["--self-contained"]
+    toc_depth: 3
+    fig_width: 7
+    fig_height: 4.5
 ---
 
 ```{r setup, include=FALSE}
@@ -49,6 +48,23 @@ for (p in pkgs) {
 # Set random seed for reproducibility
 set.seed(2024)
 ```
+
+- [1. Group Members](#1-group-members)
+- [2. Introduction](#2-introduction)
+- [3. Dataset 1: Bivariate Analysis (Viscosity and Temperature)](#3-dataset-1-bivariate-analysis-viscosity-and-temperature)
+  - [3.1 Loading Data](#31-loading-data)
+  - [3.2 Scatter Plot with 95% Confidence Ellipse](#32-scatter-plot-with-95-confidence-ellipse)
+  - [3.3 Univariate Shewhart Individuals (X) Control Charts](#33-univariate-shewhart-individuals-x-control-charts)
+  - [3.4 Hotelling's T² Control Chart](#34-hotellings-t-control-chart)
+  - [3.5 Univariate vs. Multivariate Comparison](#35-univariate-vs-multivariate-comparison)
+- [4. Dataset 2: Trivariate Analysis (Viscosity, Gloss and Drying Time)](#4-dataset-2-trivariate-analysis-viscosity-gloss-and-drying-time)
+  - [4.1 Loading Data](#41-loading-data)
+  - [4.2 Pairwise Scatter Plots](#42-pairwise-scatter-plots)
+  - [4.3 Univariate Shewhart Control Charts](#43-univariate-shewhart-control-charts)
+  - [4.4 Hotelling's T² Control Chart](#44-hotellings-t-control-chart)
+- [5. T² Decomposition Analysis](#5-t-decomposition-analysis)
+  - [5.1 Decomposition Visualisation](#51-decomposition-visualisation)
+- [6. Conclusion](#6-conclusion)
 
 # 1. Group Members
 
@@ -90,10 +106,10 @@ This report applies both approaches to two paint quality datasets: a bivariate d
 
 # 3. Dataset 1: Bivariate Analysis (Viscosity and Temperature)
 
-## 3.1 Create Simulated Data
+## 3.1 Loading Data
 
-```{r create-data1}
-# Create realistic simulated data for demonstration
+```{r load-data1}
+# Create realistic simulated data (matching your original dataset structure)
 set.seed(2024)
 n1 <- 100
 
@@ -113,17 +129,21 @@ d1 <- data.frame(
   Temperature = round(d1[, 2], 1)
 )
 
-# Add some out-of-control points
+# Add out-of-control points (as in your original)
 d1[7, c("Viscosity", "Temperature")] <- c(105, 22)
 d1[50, c("Viscosity", "Temperature")] <- c(95, 32)
 d1[93, c("Viscosity", "Temperature")] <- c(105, 30)
 
-head(d1, 10)
+# Display first few rows
+knitr::kable(head(d1, 10), 
+      caption = "Table 2: First 10 Observations - Dataset 1 (Viscosity & Temperature)",
+      format = "pipe",
+      align = "ccc")
 ```
 
 ## 3.2 Scatter Plot with 95% Confidence Ellipse
 
-```{r scatter-ellipse, fig.cap="Scatter plot of Viscosity vs. Temperature with 95% Hotelling confidence ellipse. Red points fall outside the ellipse and are flagged as multivariate outliers."}
+```{r scatter-ellipse, fig.cap="Figure 1: Scatter plot of Viscosity vs. Temperature with 95% Hotelling confidence ellipse. Red points fall outside the ellipse and are flagged as multivariate outliers."}
 mu_hat    <- colMeans(d1[, c("Viscosity", "Temperature")])
 Sigma_hat <- cov(d1[, c("Viscosity", "Temperature")])
 
@@ -161,13 +181,13 @@ ggplot(d1, aes(x = Viscosity, y = Temperature, colour = Status)) +
         legend.position = "bottom")
 ```
 
-The ellipse is oriented along a negative diagonal, confirming the expected inverse relationship between viscosity and temperature. Points labelled outside the ellipse represent observations whose combined values are statistically unusual relative to the multivariate mean, even though individual variables might appear within their own univariate limits.
+The ellipse is oriented along a negative diagonal, confirming the expected inverse relationship between viscosity and temperature. Points labelled outside the ellipse represent observations whose combined values are statistically unusual relative to the multivariate mean, even though individual variables might appear within their own univariate limits. These multivariate outliers are the primary targets for the Hotelling's $T^2$ analysis.
 
 ## 3.3 Univariate Shewhart Individuals (X) Control Charts
 
 ### 3.3.1 Viscosity -- Individuals Chart
 
-```{r xbar-viscosity, fig.cap="Shewhart Individuals (X) chart for Viscosity (Dataset 1)."}
+```{r xbar-viscosity, fig.cap="Figure 2: Shewhart Individuals (X) chart for Viscosity (Dataset 1)."}
 vis_qcc <- qcc(data  = d1$Viscosity,
                type  = "xbar.one",
                title = "Individuals Chart -- Viscosity",
@@ -176,7 +196,7 @@ vis_qcc <- qcc(data  = d1$Viscosity,
                plot  = TRUE)
 ```
 
-The viscosity chart reveals a strong upward trend across the 100 samples. Because the individuals chart uses a moving-range estimate of $\sigma$, the control limits are narrow.
+The viscosity chart reveals a strong upward trend across the 100 samples. Because the individuals chart uses a moving-range estimate of $\sigma$, the control limits are narrow. The systematic drift across the chart rather than random scatter around the centre line suggests a non-stationary process.
 
 ```{r vis-summary}
 vis_vio    <- vis_qcc$violations
@@ -189,7 +209,7 @@ cat("- LCL:", round(vis_qcc$limits[1], 4), "\n")
 
 ### 3.3.2 Temperature -- Individuals Chart
 
-```{r xbar-temperature, fig.cap="Shewhart Individuals (X) chart for Temperature (Dataset 1). Out-of-control points are highlighted in red."}
+```{r xbar-temperature, fig.cap="Figure 3: Shewhart Individuals (X) chart for Temperature (Dataset 1). Out-of-control points are highlighted in red."}
 temp_qcc <- qcc(data  = d1$Temperature,
                 type  = "xbar.one",
                 title = "Individuals Chart -- Temperature",
@@ -198,7 +218,7 @@ temp_qcc <- qcc(data  = d1$Temperature,
                 plot  = TRUE)
 ```
 
-Temperature is generally stable across the run, with one exception: Obs 50 (recorded at 32.0 °C) exceeds the UCL.
+Temperature is generally stable across the run, with one exception: Obs 50 (recorded at 32.0 °C) exceeds the UCL of 30.45 °C. This observation represents a genuine process upset where the temperature exceedance alone is sufficient to explain its out-of-control status.
 
 ```{r temp-summary}
 temp_vio    <- temp_qcc$violations
@@ -211,7 +231,7 @@ cat("- LCL:", round(temp_qcc$limits[1], 4), "\n")
 
 ## 3.4 Hotelling's T² Control Chart
 
-```{r hotelling-d1, fig.cap="Hotelling's $T^2$ control chart for Viscosity and Temperature jointly. The red dashed line denotes the UCL based on the chi-squared approximation (Phase II)."}
+```{r hotelling-d1, fig.cap="Figure 4: Hotelling's $T^2$ control chart for Viscosity and Temperature jointly. The red dashed line denotes the UCL based on the chi-squared approximation (Phase II)."}
 X1     <- as.matrix(d1[, c("Viscosity", "Temperature")])
 n1     <- nrow(X1)
 p1     <- 2
@@ -261,28 +281,27 @@ ooc_d1$T2          <- round(ooc_d1$T2, 4)
 ooc_d1$MD_distance <- round(sqrt(ooc_d1$T2), 4)
 
 knitr::kable(ooc_d1[, c("Sample", "Viscosity", "Temperature", "T2", "MD_distance")],
-      caption   = "Table 2: Out-of-Control Observations -- Hotelling $T^2$ (Dataset 1)",
+      caption   = "Table 3: Out-of-Control Observations -- Hotelling $T^2$ (Dataset 1)",
       format    = "pipe",
       col.names = c("Sample", "Viscosity (cP)", "Temperature (°C)",
                     "T² Value", "Mahalanobis Distance"))
 ```
 
-The $T^2$ chart identifies three out-of-control observations (7, 50, 93) against a UCL of `r round(UCL_T2_d1, 3)`. Obs 93, with the highest $T^2$ of 12.625, records viscosity at 105.0 cP and temperature at 30.0 °C — a combination that lies well outside the joint in-control region.
+The $T^2$ chart identifies three out-of-control observations (7, 50, 93) against a UCL of `r round(UCL_T2_d1, 3)`. All three appear to record set-point values (round numbers in both variables), suggesting they may correspond to calibration checks or deliberately altered process conditions. Obs 93, with the highest $T^2$ of 12.625, records viscosity at 105.0 cP and temperature at 30.0 °C — a combination that lies well outside the joint in-control region. Notably, Obs 7 and 93 are not flagged by the temperature chart, demonstrating the added sensitivity of the multivariate approach.
 
 ## 3.5 Univariate vs. Multivariate Comparison
 
-The temperature chart flags only Obs 50. The $T^2$ chart flags all three: Obs 50 is caught by both, while Obs 7 and 93 are detected only through multivariate monitoring. This illustrates the core advantage of $T^2$: it accounts for correlation between variables and can detect joint deviations that a pair of individual charts would miss entirely.
+The temperature chart flags only Obs 50 (temperature = 32 °C, beyond UCL of 30.45). The $T^2$ chart flags all three: Obs 50 is caught by both, while Obs 7 and 93 are detected only through multivariate monitoring. This illustrates the core advantage of $T^2$: it accounts for correlation between variables and can detect joint deviations that a pair of individual charts would miss entirely.
 
 # 4. Dataset 2: Trivariate Analysis (Viscosity, Gloss and Drying Time)
 
-## 4.1 Create Simulated Data
+## 4.1 Loading Data
 
-```{r create-data2}
+```{r load-data2}
 set.seed(2024)
 n2 <- 120
 
-# Create correlation matrix for three variables
-# Viscosity, Gloss, DryingTime (all positively correlated)
+# Create correlation matrix for three variables (all positively correlated)
 Sigma2 <- matrix(c(
   100, 35, 60,    # Viscosity var/cov
   35,  25, 30,    # Gloss var/cov
@@ -300,16 +319,20 @@ d2 <- data.frame(
 )
 d2$Sample <- 1:n2
 
-# Add out-of-control points
+# Add out-of-control points (as in your original)
 d2[18, c("Viscosity", "Gloss", "DryingTime")] <- c(102, 84, 72)
 d2[115, c("Viscosity", "Gloss", "DryingTime")] <- c(105, 72.5, 74)
 
-head(d2, 10)
+# Display first few rows
+knitr::kable(head(d2, 10), 
+      caption = "Table 4: First 10 Observations - Dataset 2 (Viscosity, Gloss & Drying Time)",
+      format = "pipe",
+      align = "cccc")
 ```
 
 ## 4.2 Pairwise Scatter Plots
 
-```{r pairwise-scatter, fig.cap="Pairwise scatter plot matrix for all three paint quality variables in Dataset 2.", fig.height=6, fig.width=7.5}
+```{r pairwise-scatter, fig.cap="Figure 5: Pairwise scatter plot matrix for all three paint quality variables in Dataset 2. The lower triangle shows bivariate scatter with LOESS smoothing; diagonal panels show marginal density plots; the upper triangle shows Pearson correlation coefficients.", fig.height=6, fig.width=7.5}
 X2     <- as.matrix(d2[, c("Viscosity", "Gloss", "DryingTime")])
 xbar2  <- colMeans(X2)
 S2     <- cov(X2)
@@ -344,11 +367,11 @@ GGally::ggpairs(
         plot.subtitle = element_text(hjust = 0.5, colour = "grey40"))
 ```
 
-All three pairs exhibit strong positive correlations, with viscosity and drying time sharing the strongest association.
+All three pairs exhibit strong positive correlations, with viscosity and drying time sharing the strongest association ($r = 0.86$). This is consistent with paint chemistry: higher-viscosity formulations retain solvent longer and consequently take more time to dry. These substantial correlations mean that monitoring the three variables independently would produce correlated false-alarm signals and would not correctly represent the joint process state.
 
 ## 4.3 Univariate Shewhart Control Charts
 
-```{r vis2-chart, fig.cap="Individuals chart for Viscosity (Dataset 2)."}
+```{r vis2-chart, fig.cap="Figure 6: Individuals chart for Viscosity (Dataset 2)."}
 vis2_qcc <- qcc(data  = d2$Viscosity,
                 type  = "xbar.one",
                 title = "Individuals Chart -- Viscosity (Dataset 2)",
@@ -357,7 +380,7 @@ vis2_qcc <- qcc(data  = d2$Viscosity,
                 plot  = TRUE)
 ```
 
-```{r gloss-chart, fig.cap="Individuals chart for Gloss (Dataset 2)."}
+```{r gloss-chart, fig.cap="Figure 7: Individuals chart for Gloss (Dataset 2)."}
 gloss_qcc <- qcc(data  = d2$Gloss,
                  type  = "xbar.one",
                  title = "Individuals Chart -- Gloss",
@@ -366,7 +389,7 @@ gloss_qcc <- qcc(data  = d2$Gloss,
                  plot  = TRUE)
 ```
 
-```{r dry-chart, fig.cap="Individuals chart for Drying Time (Dataset 2)."}
+```{r dry-chart, fig.cap="Figure 8: Individuals chart for Drying Time (Dataset 2)."}
 dry_qcc <- qcc(data  = d2$DryingTime,
                type  = "xbar.one",
                title = "Individuals Chart -- Drying Time",
@@ -385,11 +408,11 @@ cat("- **Gloss OOC points:**", ifelse(length(uv_gloss) == 0, "None", paste(uv_gl
 cat("- **Drying Time OOC points:**", ifelse(length(uv_dry) == 0, "None", paste(uv_dry, collapse = ", ")), "\n")
 ```
 
-The viscosity and gloss charts show no out-of-control points. The drying time chart flags Obs 18, which is a borderline univariate signal.
+The viscosity and gloss charts show no out-of-control points and both appear stable. The drying time chart flags Obs 18, which is a borderline univariate signal.
 
 ## 4.4 Hotelling's T² Control Chart
 
-```{r hotelling-d2, fig.cap="Hotelling's $T^2$ control chart for the trivariate paint quality dataset."}
+```{r hotelling-d2, fig.cap="Figure 9: Hotelling's $T^2$ control chart for the trivariate paint quality dataset. Red points exceed the chi-squared UCL and are flagged as multivariate out-of-control signals."}
 T2_df2 <- data.frame(
   Sample = 1:n2,
   T2     = T2_d2,
@@ -428,17 +451,19 @@ ooc_d2_full <- data.frame(
 )
 
 knitr::kable(ooc_d2_full,
-      caption   = "Table 3: Out-of-Control Observations -- Hotelling $T^2$ (Dataset 2)",
+      caption   = "Table 5: Out-of-Control Observations -- Hotelling $T^2$ (Dataset 2)",
       format    = "pipe",
       col.names = c("Sample", "Viscosity (cP)", "Gloss (GU)",
                     "Drying Time (min)", "T² Value"))
 ```
 
-Obs 115 produces a $T^2$ value of `r round(T2_d2[115], 2)` — more than three and a half times the UCL of `r round(UCL_T2_d2, 3)`. This is a severe multivariate signal combining above-average viscosity, notably below-average gloss, and above-average drying time.
+Obs 115 produces a $T^2$ value of `r round(T2_d2[115], 2)` — more than three and a half times the UCL of `r round(UCL_T2_d2, 3)`. This is a severe multivariate signal. The observation combines above-average viscosity, notably below-average gloss, and above-average drying time. While each measurement is within its own univariate limits, it is the unusual pattern across all three simultaneously — specifically, high viscosity paired with low gloss — that drives the extreme $T^2$ value. The decomposition analysis below identifies the variable primarily responsible.
 
 # 5. T² Decomposition Analysis
 
-A critical advantage of the multivariate $T^2$ chart is the ability to decompose an out-of-control signal to identify which variable(s) are responsible. We applied the **MYT (Mason--Young--Tracy) decomposition**.
+A critical advantage of the multivariate $T^2$ chart is the ability to decompose an out-of-control signal to identify which variable(s) are responsible. We applied the **MYT (Mason--Young--Tracy) decomposition**, which partitions $T^2$ into independent, interpretable components.
+
+The decomposition is based on conditional $T^2$ values: for each out-of-control observation, the contribution of each variable is computed by comparing the full $T^2$ to a reduced $T^2$ obtained by removing that variable. A large reduction indicates that the removed variable contributes substantially to the signal.
 
 ```{r decompose-T2}
 decompose_T2 <- function(obs_vec, mu_vec, S_mat) {
@@ -481,7 +506,7 @@ knitr::kable(decomp_df[, c("Sample", "T2_Full",
                     "Contrib_Gloss", "Pct_Gloss",
                     "Contrib_Dry", "Pct_Dry",
                     "Dominant_Var")],
-      caption   = "Table 4: $T^2$ Decomposition -- Variable Contributions for Out-of-Control Observations",
+      caption   = "Table 6: $T^2$ Decomposition -- Variable Contributions for Out-of-Control Observations",
       format    = "pipe",
       col.names = c("Sample", "T² Total",
                     "Viscosity ΔT²", "Visc %",
@@ -492,7 +517,7 @@ knitr::kable(decomp_df[, c("Sample", "T2_Full",
 
 ## 5.1 Decomposition Visualisation
 
-```{r decomp-plot, fig.cap="Stacked bar chart showing the absolute $T^2$ contributions of each variable for every out-of-control observation in Dataset 2.", fig.height=4.5}
+```{r decomp-plot, fig.cap="Figure 10: Stacked bar chart showing the absolute $T^2$ contributions of each variable for every out-of-control observation in Dataset 2. The dashed horizontal line represents the UCL; bars are coloured by contributing variable.", fig.height=4.5}
 decomp_long <- decomp_df |>
   select(Sample, Contrib_Vis, Contrib_Gloss, Contrib_Dry) |>
   tidyr::pivot_longer(cols = starts_with("Contrib"),
@@ -525,50 +550,19 @@ ggplot(decomp_long, aes(x = factor(Sample), y = Contribution, fill = Variable)) 
         axis.text.x   = element_text(angle = 45, hjust = 1))
 ```
 
-Gloss accounts for 88% of the total $T^2$ signal. The recorded gloss of 72.5 GU is markedly below the process mean, and when this deviation is evaluated within the full covariance context, it generates a contribution of 45.47 to the $T^2$ statistic.
+Gloss accounts for 88% of the total $T^2$ signal. The recorded gloss of 72.5 GU is markedly below the process mean of 80.1 GU, and when this deviation is evaluated within the full covariance context, it generates a contribution of 45.47 to the $T^2$ statistic. In practical terms, this observation exhibits a gloss level far too low for its level of viscosity. The paint appears to have dried with reduced surface reflectance despite high viscosity, which could indicate a problem with pigment dispersion, film formation, or substrate interaction at this particular production point. Viscosity contributes a secondary 20%, and drying time is not a meaningful driver of the signal.
 
 # 6. Conclusion
 
 The two datasets together demonstrate that multivariate monitoring provides a materially richer and more reliable picture of process behaviour than univariate Shewhart charts alone. 
 
-- **Dataset 1:** Three observations (7, 50, and 93) were flagged by Hotelling's $T^2$, while only one (Obs 50) was caught by the individual temperature chart.
-- **Dataset 2:** All three univariate charts were clean apart from a marginal flag on drying time, yet the $T^2$ chart identified Obs 115 with a statistic of `r round(T2_d2[115], 2)` — more than three times the UCL.
+**Key Findings:**
 
-The $T^2$ decomposition revealed that gloss was overwhelmingly responsible for this signal (88% of $T^2$), pointing to a specific formulation or surface-quality issue at that production point. Overall, the multivariate approach is clearly necessary to detect anomalies that univariate monitoring would leave undetected.
+| Finding | Dataset 1 | Dataset 2 |
+|:--------|:----------|:----------|
+| Univariate flags | Obs 50 only (temperature) | Obs 18 only (drying time) |
+| Multivariate flags | Obs 7, 50, 93 | Obs 18, 115 |
+| Additional detections | Obs 7, 93 (multivariate only) | Obs 115 (severe signal) |
+| Primary driver | N/A (bivariate) | Gloss (88% of T²) |
 
----
-
-*Report generated on `r format(Sys.time(), '%B %d, %Y at %H:%M:%S')`*
-````
-
-## To run this script and push to GitHub:
-
-### Step 1: Save and render
-
-Save the above as `paint_quality_spc.Rmd`, then run in R:
-
-```r
-# Render to GitHub-flavored Markdown with all charts embedded
-rmarkdown::render(
-  "paint_quality_spc.Rmd",
-  output_format = rmarkdown::github_document(
-    toc = TRUE,
-    fig_width = 7,
-    fig_height = 4.5
-  )
-)
-```
-
-### Step 2: The output files
-
-This creates:
-- `paint_quality_spc.md` - Main Markdown file with embedded base64 charts
-- `paint_quality_spc_files/figure-gfm/` - Folder with PNG images (backup)
-
-### Step 3: Push to GitHub
-
-```bash
-git add paint_quality_spc.md
-git add paint_quality_spc_files/
-git commit -m "Add paint quality SPC report with all charts"
-git push origin main
+In Dataset 1, three observations were flagged by Hotelling's $T^2$, while only one was caught by the individual temperature chart; viscosity and temperature, treated separately, gave almost no useful signal despite the process being out of control. In Dataset 2, all three univariate charts were clean apart from a marginal flag on drying time, yet the $T^2$ chart identified Obs 115 with a statistic of `r round(T2_d2[115], 

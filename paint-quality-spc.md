@@ -1,4 +1,3 @@
-```markdown
 ---
 title: "Paint Quality SPC"
 author: "Eric Ibaale"
@@ -143,4 +142,3 @@ Gloss accounts for 88% of the total $T^2$ signal. The recorded gloss of 72.5 GU 
 # 6. Conclusion
 
 The two datasets together demonstrate that multivariate monitoring provides a materially richer and more reliable picture of process behaviour than univariate Shewhart charts alone. In Dataset 1, three observations (Obs 7, 50, and 93) were flagged by Hotelling's $T^2$, while only one (Obs 50) was caught by the individual temperature chart; viscosity and temperature, treated separately, gave almost no useful signal despite the process being out of control. In Dataset 2, all three univariate charts were clean apart from a marginal flag on drying time, yet the $T^2$ chart identified Obs 115 with a statistic of 51.84 — more than three times the UCL. The $T^2$ decomposition revealed that gloss was overwhelmingly responsible for this signal (88% of $T^2$), pointing to a specific formulation or surface-quality issue at that production point. Overall, the process in both datasets is largely stable, but the multivariate approach is clearly necessary to detect the anomalies that univariate monitoring would leave undetected.
-```

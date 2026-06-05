@@ -6,8 +6,8 @@
 
 This repository contains a complete R Markdown assignment applying **univariate and multivariate Statistical Process Control (SPC)** methods to two paint manufacturing quality datasets. The report demonstrates how Hotelling's T² multivariate control chart detects process anomalies that individual Shewhart charts miss entirely.
 
-The knitted report is available here:  
-
+The knitted report is available here:
+https://github.com/ibel123/paint-quality-spc/
 
 ---
 
@@ -24,27 +24,27 @@ Both datasets represent individual observations from a paint production process,
 
 ## Analyses Performed
 
-### Dataset 1 — Bivariate (Viscosity & Temperature)
+### Dataset 1: Bivariate (Viscosity & Temperature)
 - Scatter plot with 95% Hotelling confidence ellipse
 - Shewhart individuals (X) control charts for each variable
 - Hotelling's T² multivariate control chart
 - Comparison of univariate vs. multivariate out-of-control detections
 
-### Dataset 2 — Trivariate (Viscosity, Gloss & Drying Time)
+### Dataset 2: Trivariate (Viscosity, Gloss & Drying Time)
 - Pairwise scatter plot matrix with correlation coefficients
 - Shewhart individuals (X) control charts for all three variables
 - Hotelling's T² multivariate control chart
-- **MYT T² decomposition** — identifies which variable drives each out-of-control signal
-- **Principal Component Analysis (PCA)** — scores plot with confidence ellipses
+- **MYT T² decomposition** identifies which variable drives each out-of-control signal
+- **Principal Component Analysis (PCA)** scores plot with confidence ellipses
 
 ---
 
 ## Key Findings
 
 - In Dataset 1, three observations (7, 50, 93) were flagged by the T² chart. Only one (Obs 50) was detected by the individual Shewhart charts — demonstrating the added sensitivity of multivariate monitoring.
-- In Dataset 2, Obs 115 produced a T² value of **51.84** against a UCL of 14.16 — more than three times the limit — yet was invisible to all three individual charts.
+- In Dataset 2, Obs 115 produced a T² value of **51.84** against a UCL of 14.16 more than three times the limit, yet was invisible to all three individual charts.
 - T² decomposition revealed that **Gloss** was the dominant driver of the Obs 115 signal, contributing **88%** (45.47 out of 51.84) of the total T² value.
-- PCA confirmed that PC1 explains **80.4%** of total variance, with all three variables loading approximately equally — indicating a strong shared quality factor across the process.
+- PCA confirmed that PC1 explains **80.4%** of total variance, with all three variables loading approximately equally indicating a strong shared quality factor across the process.
 
 ---
 

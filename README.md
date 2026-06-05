@@ -7,7 +7,7 @@
 This repository contains a complete R Markdown assignment applying **univariate and multivariate Statistical Process Control (SPC)** methods to two paint manufacturing quality datasets. The report demonstrates how Hotelling's T² multivariate control chart detects process anomalies that individual Shewhart charts miss entirely.
 
 The knitted report is available here:
-https://github.com/ibel123/paint-quality-spc/
+https://ibel123.github.io/paint-quality-spc/
 
 ---
 

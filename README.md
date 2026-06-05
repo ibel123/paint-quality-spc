@@ -41,7 +41,7 @@ Both datasets represent individual observations from a paint production process,
 
 ## Key Findings
 
-- In Dataset 1, three observations (7, 50, 93) were flagged by the T² chart. Only one (Obs 50) was detected by the individual Shewhart charts — demonstrating the added sensitivity of multivariate monitoring.
+- In Dataset 1, three observations (7, 50, 93) were flagged by the T² chart. Only one (Obs 50) was detected by the individual Shewhart charts, demonstrating the added sensitivity of multivariate monitoring.
 - In Dataset 2, Obs 115 produced a T² value of **51.84** against a UCL of 14.16 more than three times the limit, yet was invisible to all three individual charts.
 - T² decomposition revealed that **Gloss** was the dominant driver of the Obs 115 signal, contributing **88%** (45.47 out of 51.84) of the total T² value.
 - PCA confirmed that PC1 explains **80.4%** of total variance, with all three variables loading approximately equally indicating a strong shared quality factor across the process.
@@ -53,8 +53,7 @@ Both datasets represent individual observations from a paint production process,
 ```
 paint-quality-spc/
 │
-├── Paint_Quality_SPC_Assignment.Rmd     # Main R Markdown source file
-├── Paint_Quality_SPC_Code.R            # Extracted R code (standalone script)
+├── index.html     # Main html file
 │
 ├── data/
 │   ├── Paint_data_individual.csv        # Dataset 1 (2 variables)
@@ -130,7 +129,7 @@ tinytex::install_tinytex()
 
 ## Author
 
-**Eric Ibaale**  
+**Ibaale Eric**  
 
 ---
 
